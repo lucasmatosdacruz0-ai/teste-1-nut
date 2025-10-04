@@ -8,25 +8,25 @@ interface State {
   hasError: boolean;
 }
 
-// FIX: Changed `extends Component` to `extends React.Component`. The error "Property 'props' does not exist"
-// on a class component can sometimes indicate a TypeScript type resolution issue.
-// Using the fully qualified `React.Component` can resolve such ambiguities.
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
-  public state: State = {
+  // FIX: Removed explicit `public` keyword. While valid TypeScript, it is the default
+  // accessibility and removing it can sometimes resolve obscure type inference errors in
+  // certain toolchain configurations.
+  state: State = {
     hasError: false,
   };
 
-  public static getDerivedStateFromError(_: Error): State {
+  static getDerivedStateFromError(_: Error): State {
     // Atualiza o estado para que a próxima renderização mostre a UI de fallback.
     return { hasError: true };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Você também pode registrar o erro em um serviço externo aqui
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  public render() {
+  render() {
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-red-50 rounded-xl">
