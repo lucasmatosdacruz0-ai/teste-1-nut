@@ -2,12 +2,25 @@ import { GoogleGenAI, Chat, GenerateContentResponse, Part, TextPart, FileDataPar
 import { DailyPlan, Meal, UserData, MacroData, Recipe, FoodItem } from '../types';
 
 // --- SETUP ---
-const API_KEY = process.env.API_KEY;
-if (!API_KEY) {
-    // For this environment, we assume it's always present.
-    console.error("API_KEY is not defined.");
+
+let ai: GoogleGenAI;
+
+// Singleton function to get the AI instance.
+// This prevents the app from crashing on load if the API key is missing.
+function getAiInstance(): GoogleGenAI {
+    if (!ai) {
+        const API_KEY = process.env.API_KEY;
+        if (!API_KEY) {
+            // This will be more visible to the user than a console.error,
+            // especially with an ErrorBoundary component.
+            throw new Error("A chave da API do Google não está configurada. Configure a variável de ambiente API_KEY nas configurações do seu projeto Vercel.");
+        }
+        ai = new GoogleGenAI({ apiKey: API_KEY });
+    }
+    return ai;
 }
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+
+
 const model = 'gemini-2.5-flash';
 const imageModel = 'imagen-4.0-generate-001';
 
@@ -36,6 +49,7 @@ ${format}
 
 // Helper for handling API errors and parsing JSON
 const generateAndParseJson = async (prompt: string): Promise<any> => {
+    const ai = getAiInstance();
     try {
         const response = await ai.models.generateContent({
             model,
@@ -53,6 +67,7 @@ const generateAndParseJson = async (prompt: string): Promise<any> => {
 // --- API FUNCTIONS ---
 
 export async function* sendMessageToAI(message: string, history: { sender: 'user' | 'bot'; text: string }[]): AsyncGenerator<GenerateContentResponse, void, unknown> {
+    const ai = getAiInstance();
     try {
         const chat: Chat = ai.chats.create({
             model,
@@ -102,6 +117,7 @@ export const analyzeMealFromText = (description: string): Promise<MacroData> => 
 };
 
 export const analyzeMealFromImage = async (imageDataUrl: string): Promise<MacroData> => {
+    const ai = getAiInstance();
     const [header, base64Data] = imageDataUrl.split(',');
     if (!header || !base64Data) {
         throw new Error('Formato de imagem inválido.');
@@ -136,18 +152,21 @@ export const analyzeMealFromImage = async (imageDataUrl: string): Promise<MacroD
 };
 
 export const analyzeProgress = async (userData: UserData): Promise<string> => {
+    const ai = getAiInstance();
     const prompt = `Analise os dados de progresso do usuário e forneça um resumo motivacional com dicas. Fale diretamente com o usuário. ${buildUserProfile(userData)}`;
     const response = await ai.models.generateContent({ model, contents: prompt });
     return response.text;
 };
 
 export const generateShoppingList = async (weekPlan: DailyPlan[]): Promise<string> => {
+    const ai = getAiInstance();
      const prompt = `Crie uma lista de compras detalhada e organizada por categorias (ex: Frutas, Vegetais, Carnes) com base no seguinte plano alimentar semanal:\n${JSON.stringify(weekPlan)}`;
      const response = await ai.models.generateContent({ model, contents: prompt });
      return response.text;
 };
 
 export const getFoodInfo = async (question: string, mealContext?: Meal): Promise<string> => {
+    const ai = getAiInstance();
     const prompt = `Responda à seguinte dúvida sobre alimentos de forma clara e concisa. Pergunta: "${question}" ${mealContext ? `Contexto da refeição: ${JSON.stringify(mealContext)}` : ''}`;
     const response = await ai.models.generateContent({ model, contents: prompt });
     return response.text;
@@ -159,6 +178,7 @@ export const getFoodSubstitution = (itemToSwap: FoodItem, mealContext: Meal, use
 };
 
 export const generateImageFromPrompt = async (prompt: string): Promise<string> => {
+    const ai = getAiInstance();
     const response = await ai.models.generateImages({
         model: imageModel,
         prompt: prompt,
