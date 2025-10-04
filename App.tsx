@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback, FC } from 'react';
 import { View, UserData, UserDataHandlers, Message, DailyPlan, Recipe, RecipesViewState, NotificationState, UpsellModalState, PlanKey, DietDifficulty, MacroData, FoodItem, Meal, ActivityLog } from './types';
 import OnboardingFlow from './components/OnboardingFlow';
+import LoginView from './components/LoginView';
 import Sidebar from './components/Sidebar';
 import BottomNav from './components/BottomNav';
 import Dashboard from './components/Dashboard';
@@ -25,7 +26,6 @@ import FlameOverlay from './components/FlameOverlay';
 import Tutorial from './components/Tutorial';
 import StartTutorialModal from './components/StartTutorialModal';
 
-// FIX: Import missing icons for FAB
 import { ChatIcon } from './components/icons/ChatIcon';
 import { HomeIcon } from './components/icons/HomeIcon';
 
@@ -37,9 +37,9 @@ import { ALL_ACHIEVEMENTS } from './constants/achievements';
 import { TUTORIAL_STEPS } from './constants/tutorialSteps';
 import { PLANS, ALL_FEATURES } from './constants/plans';
 
-const defaultUserData: UserData = {
+export const defaultUserData: Omit<UserData, 'email'> = {
     isRegistered: false,
-    name: '', email: '', profilePicture: null,
+    name: '', profilePicture: null,
     age: 30, gender: 'male', height: 175, activityLevel: 'sedentary',
     initialWeight: 75, weight: 75, weightHistory: [], weightGoal: 70,
     water: 0, waterGoal: 2.5,
@@ -67,9 +67,13 @@ const defaultUserData: UserData = {
 
 const App: FC = () => {
     // Core State
-    const [userData, setUserData] = useState<UserData | null>(null);
+    const [allUsers, setAllUsers] = useState<Record<string, UserData>>({});
+    const [activeUserEmail, setActiveUserEmail] = useState<string | null>(null);
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
     const [activeView, setActiveView] = useState<View>('Dashboard');
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    const userData = activeUserEmail ? allUsers[activeUserEmail] : null;
 
     // Feature State
     const [mealPlan, setMealPlan] = useState<Record<string, DailyPlan> | null>(null);
@@ -99,31 +103,20 @@ const App: FC = () => {
 
     useEffect(() => {
         try {
-            const savedData = localStorage.getItem('nutribot-userdata');
-            const savedMealPlan = localStorage.getItem('nutribot-mealplan');
-            const savedMessages = localStorage.getItem('nutribot-messages');
-            const savedFavPlans = localStorage.getItem('nutribot-fav-plans');
-            const savedFavRecipes = localStorage.getItem('nutribot-fav-recipes');
-            const savedRecipeCache = localStorage.getItem('nutribot-recipe-cache');
+            const savedUsers = localStorage.getItem('nutribot-users');
+            const savedActiveUser = localStorage.getItem('nutribot-active-user-email');
 
-            if (savedData) {
-                const parsedData = JSON.parse(savedData) as UserData;
-                setUserData(checkAndResetUsage(parsedData));
-                if (!parsedData.hasCompletedTutorial && parsedData.isRegistered) {
-                    setTutorialState(prev => ({ ...prev, isInitialModalOpen: true }));
-                }
-            } else {
-                setUserData(defaultUserData);
+            const allUsersData = savedUsers ? JSON.parse(savedUsers) : {};
+            setAllUsers(allUsersData);
+
+            if (savedActiveUser && allUsersData[savedActiveUser]) {
+                 setActiveUserEmail(savedActiveUser);
             }
-            if (savedMealPlan) setMealPlan(JSON.parse(savedMealPlan));
-            if (savedMessages) setMessages(JSON.parse(savedMessages));
-            if (savedFavPlans) setFavoritePlans(JSON.parse(savedFavPlans));
-            if (savedFavRecipes) setFavoriteRecipes(JSON.parse(savedFavRecipes));
-            if (savedRecipeCache) setRecipesViewState(prev => ({...prev, recipeImageCache: JSON.parse(savedRecipeCache)}));
         } catch (error) {
-            console.error("Failed to load data from localStorage", error);
+            console.error("Failed to load user data from localStorage", error);
             localStorage.clear();
-            setUserData(defaultUserData);
+        } finally {
+            setIsDataLoaded(true);
         }
     }, []);
 
@@ -134,13 +127,63 @@ const App: FC = () => {
             console.error(`Failed to save ${key} to localStorage`, error);
         }
     }, []);
+
+    useEffect(() => {
+        if (activeUserEmail) {
+            try {
+                const userSpecificData = localStorage.getItem(`nutribot-data-${activeUserEmail}`);
+                if (userSpecificData) {
+                    const { mealPlan, messages, favoritePlans, favoriteRecipes, recipeImageCache } = JSON.parse(userSpecificData);
+                    setMealPlan(mealPlan || null);
+                    setMessages(messages || []);
+                    setFavoritePlans(favoritePlans || []);
+                    setFavoriteRecipes(favoriteRecipes || []);
+                    setRecipesViewState(prev => ({...prev, recipeImageCache: recipeImageCache || {}}));
+                } else {
+                    // Reset if no specific data found
+                    setMealPlan(null);
+                    setMessages([]);
+                    setFavoritePlans([]);
+                    setFavoriteRecipes([]);
+                    setRecipesViewState(prev => ({...prev, recipeImageCache: {}}));
+                }
+
+                if (userData && !userData.hasCompletedTutorial && userData.isRegistered) {
+                     setTutorialState(prev => ({ ...prev, isInitialModalOpen: true }));
+                }
+
+            } catch (error) {
+                 console.error("Failed to load user-specific data", error);
+            }
+        }
+    }, [activeUserEmail, userData?.isRegistered, userData?.hasCompletedTutorial]);
+
     
-    useEffect(() => { if (userData) saveDataToLocalStorage('nutribot-userdata', userData); }, [userData, saveDataToLocalStorage]);
-    useEffect(() => { if (mealPlan) saveDataToLocalStorage('nutribot-mealplan', mealPlan); }, [mealPlan, saveDataToLocalStorage]);
-    useEffect(() => { saveDataToLocalStorage('nutribot-messages', messages); }, [messages, saveDataToLocalStorage]);
-    useEffect(() => { saveDataToLocalStorage('nutribot-fav-plans', favoritePlans); }, [favoritePlans, saveDataToLocalStorage]);
-    useEffect(() => { saveDataToLocalStorage('nutribot-fav-recipes', favoriteRecipes); }, [favoriteRecipes, saveDataToLocalStorage]);
-    useEffect(() => { saveDataToLocalStorage('nutribot-recipe-cache', recipesViewState.recipeImageCache); }, [recipesViewState.recipeImageCache, saveDataToLocalStorage]);
+    useEffect(() => {
+        saveDataToLocalStorage('nutribot-users', allUsers);
+    }, [allUsers, saveDataToLocalStorage]);
+
+    useEffect(() => {
+        if (activeUserEmail) {
+            localStorage.setItem('nutribot-active-user-email', activeUserEmail);
+        } else {
+            localStorage.removeItem('nutribot-active-user-email');
+        }
+    }, [activeUserEmail]);
+
+    useEffect(() => {
+        if (activeUserEmail) {
+            const userSpecificData = {
+                mealPlan,
+                messages,
+                favoritePlans,
+                favoriteRecipes,
+                recipeImageCache: recipesViewState.recipeImageCache
+            };
+            saveDataToLocalStorage(`nutribot-data-${activeUserEmail}`, userSpecificData);
+        }
+    }, [mealPlan, messages, favoritePlans, favoriteRecipes, recipesViewState.recipeImageCache, activeUserEmail, saveDataToLocalStorage]);
+
 
     // --- USAGE TRACKING ---
     const checkAndResetUsage = (data: UserData): UserData => {
@@ -186,13 +229,8 @@ const App: FC = () => {
             return false;
         }
         
-        setUserData(prev => {
-            if (!prev) return prev;
-            const updatedUsageData = { ...usageData, [featureKey]: currentUsage + amount };
-            return {
-                ...prev,
-                [isWeekly ? 'weeklyUsage' : 'dailyUsage']: updatedUsageData,
-            };
+        updateUserData({
+            [isWeekly ? 'weeklyUsage' : 'dailyUsage']: { ...usageData, [featureKey]: currentUsage + amount },
         });
 
         return true;
@@ -201,32 +239,33 @@ const App: FC = () => {
 
     // --- CORE HANDLERS ---
     const updateUserData = useCallback((data: Partial<UserData>) => {
-        setUserData(prev => prev ? { ...prev, ...data } : null);
-    }, []);
+        if (!activeUserEmail) return;
+        setAllUsers(prev => ({
+            ...prev,
+            [activeUserEmail]: { ...prev[activeUserEmail], ...data }
+        }));
+    }, [activeUserEmail]);
+
 
     const addXP = useCallback((amount: number, reason: string) => {
         if (!userData) return;
-        setUserData(prev => {
-            if (!prev) return null;
-            let newXp = prev.xp + amount;
-            let newLevel = prev.level;
-            let xpForNextLevel = calculateXPForLevel(newLevel);
-            while (newXp >= xpForNextLevel) {
-                newXp -= xpForNextLevel;
-                newLevel += 1;
-                xpForNextLevel = calculateXPForLevel(newLevel);
-                // TODO: Add level up notification
-            }
-            return { ...prev, xp: newXp, level: newLevel };
-        });
         
-        // Check for new achievements unlocked
+        let newXp = userData.xp + amount;
+        let newLevel = userData.level;
+        let xpForNextLevel = calculateXPForLevel(newLevel);
+        while (newXp >= xpForNextLevel) {
+            newXp -= xpForNextLevel;
+            newLevel += 1;
+            xpForNextLevel = calculateXPForLevel(newLevel);
+            // TODO: Add level up notification
+        }
+        updateUserData({ xp: newXp, level: newLevel });
+        
         const newlyUnlocked = ALL_ACHIEVEMENTS.filter(ach => !userData.achievements.includes(ach.id));
         if (newlyUnlocked.length > 0) {
             // Re-evaluate achievements with new XP/level data
-            // This is a simplified check; a more robust system would re-evaluate all achievements.
         }
-    }, [userData]);
+    }, [userData, updateUserData]);
 
 
     const addWater = useCallback((amount: number) => {
@@ -237,19 +276,15 @@ const App: FC = () => {
 
     const handleLogMeal = useCallback((macros: MacroData) => {
         if (!userData) return;
-        setUserData(prev => {
-            if (!prev) return null;
-            return {
-                ...prev,
-                macros: {
-                    calories: { ...prev.macros.calories, current: prev.macros.calories.current + macros.calories },
-                    carbs: { ...prev.macros.carbs, current: prev.macros.carbs.current + macros.carbs },
-                    protein: { ...prev.macros.protein, current: prev.macros.protein.current + macros.protein },
-                    fat: { ...prev.macros.fat, current: prev.macros.fat.current + macros.fat },
-                }
-            };
+        updateUserData({
+            macros: {
+                calories: { ...userData.macros.calories, current: userData.macros.calories.current + macros.calories },
+                carbs: { ...userData.macros.carbs, current: userData.macros.carbs.current + macros.carbs },
+                protein: { ...userData.macros.protein, current: userData.macros.protein.current + macros.protein },
+                fat: { ...userData.macros.fat, current: userData.macros.fat.current + macros.fat },
+            }
         });
-    }, [userData]);
+    }, [userData, updateUserData]);
 
     const handleUpdateWeight = useCallback((newWeight: number) => {
         if (!userData) return;
@@ -475,13 +510,12 @@ const App: FC = () => {
     
     const handleChatSendMessage = useCallback(async (message: string) => {
         if(!checkAndIncrementUsage('chatInteractions')) {
-            // A simple generator that yields nothing and returns
             async function* emptyGenerator() { yield* []; }
             return emptyGenerator();
         }
-        const history = messages.slice(-10); // Pass last 10 messages as history
+        const history = messages.slice(-10);
         const stream = geminiService.sendMessageToAI(message, history);
-        setLastMealPlanText(null); // Reset before new message
+        setLastMealPlanText(null);
         return stream;
     }, [messages, checkAndIncrementUsage]);
 
@@ -538,17 +572,57 @@ const App: FC = () => {
         );
     }, []);
 
-    // Other handlers that require full state context
     const handleOnboardingComplete = useCallback((data: Partial<UserData>) => {
-        const fullData = {
-            ...defaultUserData,
+        const fullData: Partial<UserData> = {
             ...data,
             isRegistered: true,
             weightHistory: [{ date: new Date().toISOString().split('T')[0], weight: data.weight! }],
         };
-        setUserData(checkAndResetUsage(fullData));
+        const updatedWithMacros = {
+            ...fullData,
+            macros: calculateNewMacroGoals(fullData as UserData), // a bit of type casting needed here
+        }
+        updateUserData(updatedWithMacros);
         setTutorialState(prev => ({ ...prev, isInitialModalOpen: true }));
-    }, []);
+    }, [updateUserData]);
+
+    // --- AUTH HANDLERS ---
+    const handleLogin = async (email: string, pass: string) => {
+        if (allUsers[email]) {
+            setActiveUserEmail(email);
+            return { success: true, message: "Login bem-sucedido!" };
+        }
+        return { success: false, message: "Usuário não encontrado." };
+    };
+
+    const handleRegister = async (name: string, email: string, pass: string) => {
+        if (allUsers[email]) {
+            return { success: false, message: "Este email já está em uso." };
+        }
+        const trialEndDate = new Date();
+        trialEndDate.setDate(trialEndDate.getDate() + 7);
+        const newUser: UserData = {
+            ...defaultUserData,
+            name,
+            email,
+            trialEndDate: trialEndDate.toISOString(),
+        };
+        setAllUsers(prev => ({ ...prev, [email]: newUser }));
+        setActiveUserEmail(email);
+        return { success: true, message: "Registro bem-sucedido!" };
+    };
+
+     const handleLogout = () => {
+        if (window.confirm("Você tem certeza que quer sair?")) {
+            setActiveUserEmail(null);
+            // Also clear user-specific data to avoid carrying over to next login
+            setMealPlan(null);
+            setMessages([]);
+            setFavoritePlans([]);
+            setFavoriteRecipes([]);
+            setRecipesViewState({ activeTab: 'search', query: '', recipes: [], recipeImageCache: {} });
+        }
+    };
     
     const handlers: UserDataHandlers = {
         updateUserData,
@@ -574,15 +648,10 @@ const App: FC = () => {
         handleChangeSubscription: (newPlan: PlanKey) => updateUserData({ currentPlan: newPlan }),
         handleCancelSubscription: () => updateUserData({ isSubscribed: false, currentPlan: null, billingCycle: null }),
         handlePurchaseFeaturePack: (featureKey: string, packSize: number) => {
-            setUserData(prev => {
-                if (!prev) return prev;
-                const currentPurchases = prev.purchasedUses?.[featureKey] || 0;
-                return {
-                    ...prev,
-                    purchasedUses: {
-                        ...prev.purchasedUses,
-                        [featureKey]: currentPurchases + packSize,
-                    }
+            updateUserData({
+                purchasedUses: {
+                    ...(userData?.purchasedUses || {}),
+                    [featureKey]: (userData?.purchasedUses?.[featureKey] || 0) + packSize,
                 }
             });
             setUpsellModalState({ isOpen: false, featureKey: null, featureText: null });
@@ -594,20 +663,15 @@ const App: FC = () => {
         handleAnalyzeMeal,
         handleAnalyzeProgress,
         getFoodInfo,
-        handleLogin: async () => ({ success: false, message: 'Não implementado.' }),
-        handleRegister: async () => ({ success: false, message: 'Não implementado.' }),
-        handleLogout: () => {
-             if (window.confirm("Você tem certeza que quer sair? Isso apagará seus dados locais.")) {
-                localStorage.clear();
-                window.location.reload();
-            }
-        },
+        handleLogin,
+        handleRegister,
+        handleLogout,
         handleLogActivity,
     };
     
     // --- RENDER LOGIC ---
 
-    if (!userData) {
+    if (!isDataLoaded) {
         return (
             <div className="flex items-center justify-center h-screen bg-slate-100">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-green"></div>
@@ -615,10 +679,20 @@ const App: FC = () => {
         );
     }
     
+    if (!activeUserEmail) {
+        return <LoginView onLogin={handleLogin} onRegister={handleRegister} />;
+    }
+
+    if (!userData) {
+        // This case should ideally not happen if activeUserEmail is set, but as a fallback:
+        handleLogout();
+        return null;
+    }
+
     if (!userData.isRegistered) {
         return <OnboardingFlow onComplete={handleOnboardingComplete} />;
     }
-
+    
     const isTrialExpired = !userData.isSubscribed && new Date(userData.trialEndDate) <= new Date();
     if (isTrialExpired) {
         return <SubscriptionBlockView onOpenSubscriptionModal={() => setSubscriptionModalOpen(true)} />;
@@ -644,7 +718,6 @@ const App: FC = () => {
         }
     };
     
-    // FIX: Fix typo constFAB to const FAB
     const FAB = () => (
       <button
         onClick={() => setActiveView(activeView === 'Dashboard' ? 'Chat IA' : 'Dashboard')}

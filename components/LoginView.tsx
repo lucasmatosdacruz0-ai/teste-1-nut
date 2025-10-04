@@ -5,10 +5,9 @@ import { BowlIcon } from './icons/BowlIcon';
 interface LoginViewProps {
     onLogin: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
     onRegister: (name: string, email: string, password: string) => Promise<{ success: boolean; message: string }>;
-    onSkipLogin: () => void;
 }
 
-const LoginView: React.FC<LoginViewProps> = ({ onLogin, onRegister, onSkipLogin }) => {
+const LoginView: React.FC<LoginViewProps> = ({ onLogin, onRegister }) => {
     const [isLoginView, setIsLoginView] = useState(true);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -91,12 +90,6 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onRegister, onSkipLogin 
                     <div className="text-center mt-6">
                         <button onClick={() => { setIsLoginView(!isLoginView); setError(''); }} className="text-sm text-brand-green hover:underline font-medium">
                             {isLoginView ? 'Não tem uma conta? Registre-se' : 'Já tem uma conta? Faça login'}
-                        </button>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-slate-200 text-center">
-                        <button onClick={onSkipLogin} className="text-sm text-slate-500 hover:text-slate-800 transition-colors">
-                            Pular login (Desenvolvimento)
                         </button>
                     </div>
                 </div>

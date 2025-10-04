@@ -203,8 +203,8 @@ export interface UserDataHandlers {
     getFoodInfo: (question: string, mealContext?: Meal) => Promise<string>;
     
     // Authentication handlers
-    handleLogin: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
-    handleRegister: (name: string, email: string, password: string) => Promise<{ success: boolean; message: string }>;
+    handleLogin: (email: string, pass: string) => Promise<{ success: boolean; message: string }>;
+    handleRegister: (name: string, email: string, pass: string) => Promise<{ success: boolean; message: string }>;
     handleLogout: () => void;
     
     // FIX: Add handleLogActivity handler
