@@ -1,10 +1,7 @@
 import React, { useState, useMemo, FC } from 'react';
 import { UserData, UserDataHandlers, ActivityLog } from '../types';
-import { ActivityIcon } from './icons/ActivityIcon';
-import { FireIcon } from './icons/FireIcon';
-import { ClockIcon } from './icons/ClockIcon';
+import { ActivityIcon, FireIcon, ClockIcon, PlusIcon } from './icons';
 import LogActivityModal from './LogActivityModal';
-import { PlusIcon } from './icons/PlusIcon';
 
 interface AtividadesViewProps {
     userData: UserData;
@@ -41,7 +38,7 @@ const AtividadesView: React.FC<AtividadesViewProps> = ({ userData, handlers }) =
     const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
     const todaysLogs = useMemo(() => {
-        return userData.activityLogs
+        return (userData.activityLogs || [])
             .filter(log => log.date === todayStr)
             .sort((a, b) => parseInt(b.id) - parseInt(a.id));
     }, [userData.activityLogs, todayStr]);

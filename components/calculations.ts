@@ -12,21 +12,41 @@ interface CalculationParams {
 
 export const calculateNewMacroGoals = ({
     weight,
-    // height, age, gender, activityLevel are no longer used but kept for type compatibility
+    height,
+    age,
+    gender,
+    activityLevel,
     weightGoal,
     dietDifficulty
 }: CalculationParams): UserMacros => {
     
-    // Step 1: Calculate Maintenance Calories (TDEE)
-    // TDEE = peso × 30 (para atividade moderada).
-    const tdee = weight * 30;
+    // Step 1: Calculate Basal Metabolic Rate (BMR) using Mifflin-St Jeor formula
+    let bmr: number;
+    if (gender === 'male') {
+        bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+    } else if (gender === 'female') {
+        bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+    } else {
+        // For 'other', use an average of male and female formulas
+        bmr = (10 * weight) + (6.25 * height) - (5 * age) - 78;
+    }
+
+    // Step 2: Calculate Total Daily Energy Expenditure (TDEE)
+    const activityMultipliers: Record<ActivityLevel, number> = {
+        sedentary: 1.2,
+        light: 1.375,
+        moderate: 1.55,
+        active: 1.725,
+        very_active: 1.9,
+    };
+    const tdee = bmr * activityMultipliers[activityLevel];
     
     const objective: 'lose' | 'gain' | 'maintain' = 
         weight > weightGoal ? 'lose' :
         weight < weightGoal ? 'gain' :
         'maintain';
 
-    // Step 2: Determine Calorie Goal based on Objective and Difficulty
+    // Step 3: Determine Calorie Goal based on Objective and Difficulty
     let calorieGoal = tdee;
 
     if (objective === 'lose') {
@@ -56,7 +76,7 @@ export const calculateNewMacroGoals = ({
     }
     // For 'maintain', calorieGoal remains tdee
 
-    // Step 3: Set Protein goal based on body weight (g/kg).
+    // Step 4: Set Protein goal based on body weight (g/kg).
     let proteinPerKg: number;
     if (objective === 'lose') {
         switch (dietDifficulty) {
@@ -84,9 +104,8 @@ export const calculateNewMacroGoals = ({
         }
     }
     const proteinGoalInGrams = Math.round(weight * proteinPerKg);
-    const caloriesFromProtein = proteinGoalInGrams * 4;
 
-    // Step 4: Set Fat goal based on a percentage of total calories.
+    // Step 5: Set Fat goal based on a percentage of total calories.
     let fatPercentage: number;
     switch (dietDifficulty) {
         case 'easy':
@@ -102,11 +121,12 @@ export const calculateNewMacroGoals = ({
     const caloriesFromFat = calorieGoal * fatPercentage;
     const fatGoalInGrams = Math.round(caloriesFromFat / 9);
 
-    // Step 5: Calculate Carbs from the remaining calories
+    // Step 6: Calculate Carbs from the remaining calories
+    const caloriesFromProtein = proteinGoalInGrams * 4;
     const remainingCaloriesForCarbs = calorieGoal - caloriesFromProtein - (fatGoalInGrams * 9);
     const carbGoalInGrams = Math.round(Math.max(0, remainingCaloriesForCarbs) / 4);
     
-    // Step 6: Recalculate final calorie goal to match the sum of macros, correcting for rounding.
+    // Step 7: Recalculate final calorie goal to match the sum of macros, correcting for rounding.
     const finalCalorieGoal = (proteinGoalInGrams * 4) + (carbGoalInGrams * 4) + (fatGoalInGrams * 9);
 
     return {

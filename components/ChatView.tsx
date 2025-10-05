@@ -100,23 +100,24 @@ const ChatView: React.FC<ChatViewProps> = ({ userData, messages, setMessages, on
                 botResponse += chunkText;
                 
                 if (firstChunk) {
+                    // FIX: Avoided state mutation by creating a new message object instead of modifying it directly.
                     setMessages(prev => {
                         const newMessages = [...prev];
                         const lastMessage = newMessages[newMessages.length - 1];
                         if (lastMessage?.sender === 'bot' && (lastMessage as any).type === 'thinking') {
-                           lastMessage.text = botResponse;
-                           delete (lastMessage as any).type;
-                           lastMessage.isStreaming = true;
+                           const { type, ...rest } = lastMessage as any;
+                           newMessages[newMessages.length - 1] = { ...rest, text: botResponse, isStreaming: true };
                         }
                         return newMessages;
                     });
                     firstChunk = false;
                 } else {
+                    // FIX: Avoided state mutation by creating a new message object instead of modifying it directly.
                     setMessages(prev => {
                         const newMessages = [...prev];
                         const lastMessage = newMessages[newMessages.length - 1];
                         if (lastMessage?.sender === 'bot') {
-                            lastMessage.text = botResponse;
+                            newMessages[newMessages.length - 1] = { ...lastMessage, text: botResponse };
                         }
                         return newMessages;
                     });
@@ -128,23 +129,24 @@ const ChatView: React.FC<ChatViewProps> = ({ userData, messages, setMessages, on
                 onNewMealPlanText(botResponse);
             }
 
+            // FIX: Avoided state mutation by creating a new message object instead of modifying it directly.
             setMessages(prev => {
                 const newMessages = [...prev];
                 const lastMessage = newMessages[newMessages.length - 1];
                 if (lastMessage?.sender === 'bot') {
-                    lastMessage.isStreaming = false;
+                     newMessages[newMessages.length - 1] = { ...lastMessage, isStreaming: false };
                 }
                 return newMessages;
             });
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+            // FIX: Avoided state mutation by creating a new message object instead of modifying it directly.
             setMessages(prev => {
                 const newMessages = [...prev];
                 const lastMessage = newMessages[newMessages.length - 1];
                 if (lastMessage?.sender === 'bot') {
-                    lastMessage.text = `Desculpe, ocorreu um erro. ${errorMessage}`;
-                    delete (lastMessage as any).type;
-                    lastMessage.isStreaming = false;
+                    const { type, ...rest } = lastMessage as any;
+                    newMessages[newMessages.length - 1] = { ...rest, text: `Desculpe, ocorreu um erro. ${errorMessage}`, isStreaming: false };
                 }
                 return newMessages;
             });
