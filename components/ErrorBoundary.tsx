@@ -9,12 +9,13 @@ interface State {
 }
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
-  // FIX: Removed explicit `public` keyword. While valid TypeScript, it is the default
-  // accessibility and removing it can sometimes resolve obscure type inference errors in
-  // certain toolchain configurations.
-  state: State = {
-    hasError: false,
-  };
+  // FIX: Refactored to use constructor for state initialization to improve compatibility and fix type resolution for props.
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = {
+      hasError: false,
+    };
+  }
 
   static getDerivedStateFromError(_: Error): State {
     // Atualiza o estado para que a próxima renderização mostre a UI de fallback.
