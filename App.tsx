@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, FC } from 'react';
 import { View, UserData, UserDataHandlers, Message, DailyPlan, Recipe, RecipesViewState, NotificationState, UpsellModalState, PlanKey, DietDifficulty, MacroData, FoodItem, Meal, ActivityLog } from './types';
 import OnboardingFlow from './components/OnboardingFlow';
@@ -26,8 +27,7 @@ import FlameOverlay from './components/FlameOverlay';
 import Tutorial from './components/Tutorial';
 import StartTutorialModal from './components/StartTutorialModal';
 
-import { ChatIcon } from './components/icons/ChatIcon';
-import { HomeIcon } from './components/icons/HomeIcon';
+import { ChatIcon, HomeIcon } from './components/icons';
 
 import * as geminiService from './services/geminiService';
 import { calculateNewMacroGoals } from './components/calculations';

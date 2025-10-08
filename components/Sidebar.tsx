@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UserData, View, UserDataHandlers } from '../types';
-import { BowlIcon } from './icons/BowlIcon';
+import { BowlIcon } from './icons';
 import { NAV_ITEMS } from '../constants';
 import SubscriptionCTA from './SubscriptionCTA';
 

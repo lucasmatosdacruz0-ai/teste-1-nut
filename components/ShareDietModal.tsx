@@ -24,7 +24,7 @@ const ShareDietModal: FC<ShareDietModalProps> = ({ isOpen, onClose, imageDataUrl
     const [isSharing, setIsSharing] = useState(false);
 
     useEffect(() => {
-        if (navigator.share) {
+        if ('share' in navigator) {
             setCanShare(true);
         }
     }, []);

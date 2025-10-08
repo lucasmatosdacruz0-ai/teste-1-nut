@@ -2,12 +2,9 @@
 
 import React, { useState } from 'react';
 import { DailyPlan, View } from '../types';
-import { StarIcon } from './icons/StarIcon';
+import { StarIcon, CalendarIcon, ChevronRightIcon, EditIcon } from './icons';
 import Modal from './Modal';
 import MealCard from './MealCard';
-import { CalendarIcon } from './icons/CalendarIcon';
-import { ChevronRightIcon } from './icons/ChevronRightIcon';
-import { EditIcon } from './icons/EditIcon';
 
 
 interface FavoritesViewProps {

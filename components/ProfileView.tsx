@@ -2,19 +2,12 @@
 
 import React, { useState, useRef, useMemo } from 'react';
 import { UserData, UserDataHandlers, Gender, ActivityLevel, View } from '../types';
-import { UserIcon } from './icons/UserIcon';
-import { EditIcon } from './icons/EditIcon';
-import { LogoutIcon } from './icons/LogoutIcon';
+import { UserIcon, EditIcon, LogoutIcon, SparklesIcon, ActivityIcon, TargetIcon, UtensilsIcon, QuestionMarkCircleIcon } from './icons';
 import Modal from './Modal';
 import XPDisplay from './XPDisplay';
 import { ALL_ACHIEVEMENTS } from '../constants/achievements';
 import { PLANS } from '../constants/plans';
-import { SparklesIcon } from './icons/SparklesIcon';
-import { ActivityIcon } from './icons/ActivityIcon';
 import CollapsibleCard from './CollapsibleCard';
-import { TargetIcon } from './icons/TargetIcon';
-import { UtensilsIcon } from './icons/UtensilsIcon';
-import { QuestionMarkCircleIcon } from './icons/QuestionMarkCircleIcon';
 
 interface ProfileViewProps {
     userData: UserData;

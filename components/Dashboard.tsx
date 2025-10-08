@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import InfoCard from './InfoCard';
 import Modal from './Modal';
@@ -6,21 +7,23 @@ import LogMealModal from './LogMealModal';
 import WaterReminderModal from './WaterReminderModal';
 import AdjustGoalModal from './AdjustGoalModal';
 import { WaterReminderSettings, UserData, UserDataHandlers, View, DietDifficulty, DailyPlan } from '../types';
-import { GraphIcon } from './icons/GraphIcon';
-import { FireIcon } from './icons/FireIcon';
-import { WaterDropIcon } from './icons/WaterDropIcon';
-import { ClockIcon } from './icons/ClockIcon';
-import { CalendarIcon } from './icons/CalendarIcon';
-import { BowlIcon } from './icons/BowlIcon';
-import { BellIcon } from './icons/BellIcon';
-import { UserIcon } from './icons/UserIcon';
-import { EditIcon } from './icons/EditIcon';
-import { CheckIcon } from './icons/CheckIcon';
-import { TrophyIcon } from './icons/TrophyIcon';
+import { 
+    GraphIcon, 
+    FireIcon, 
+    WaterDropIcon, 
+    ClockIcon, 
+    CalendarIcon, 
+    BowlIcon, 
+    BellIcon, 
+    UserIcon, 
+    EditIcon, 
+    CheckIcon, 
+    TrophyIcon,
+    DumbbellIcon
+} from './icons';
 import { calculateXPForLevel } from './utils/xpUtils';
 import SubscriptionCTA from './SubscriptionCTA';
 import TodaysDietCard from './TodaysDietCard';
-import { DumbbellIcon } from './icons/DumbbellIcon';
 
 
 interface DashboardProps {

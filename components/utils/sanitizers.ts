@@ -1,4 +1,4 @@
-import { DailyPlan, FoodItem, Meal } from '../types';
+import { DailyPlan, FoodItem, Meal } from '../../types';
 
 export const sanitizeFoodItem = (item: any): FoodItem | null => {
     if (typeof item !== 'object' || item === null || typeof item.name !== 'string') return null;

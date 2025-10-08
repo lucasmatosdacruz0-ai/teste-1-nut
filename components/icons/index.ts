@@ -22,6 +22,8 @@ export * from './DumbbellIcon';
 export * from './EditIcon';
 export * from './FireIcon';
 export * from './GridIcon';
+// FIX: Export `GraphIcon` to make it available to other components.
+export * from './GraphIcon';
 export * from './HomeIcon';
 export * from './ImageIcon';
 export * from './ListIcon';
