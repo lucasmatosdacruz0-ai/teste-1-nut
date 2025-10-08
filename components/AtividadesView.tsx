@@ -1,6 +1,6 @@
 import React, { useState, useMemo, FC } from 'react';
 import { UserData, UserDataHandlers, ActivityLog } from '../types';
-import { ActivityIcon, FireIcon, ClockIcon, PlusIcon } from './icons';
+import { ActivityIcon, FireIcon, ClockIcon, PlusIcon } from '../components/icons';
 import LogActivityModal from './LogActivityModal';
 
 interface AtividadesViewProps {
