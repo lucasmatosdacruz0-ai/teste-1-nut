@@ -83,10 +83,10 @@ const RecipesView: React.FC<RecipesViewProps> = ({ userData, favoriteRecipes, on
 
         setIsLoading(true);
         setError(null);
-        onStateChange(prev => ({ ...prev, recipes: [] }));
+        onStateChange((prev: any) => ({ ...prev, recipes: [] }));
         try {
             const results = await findRecipes(searchQuery, userData, numRecipesToGenerate);
-            onStateChange(prev => ({ ...prev, recipes: results }));
+            onStateChange((prev: any) => ({ ...prev, recipes: results }));
             // onRecipesGenerated is kept for potential future use but usage is now handled by checkAndIncrementUsage
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Ocorreu um erro desconhecido.');
@@ -116,7 +116,7 @@ const RecipesView: React.FC<RecipesViewProps> = ({ userData, favoriteRecipes, on
         setIsImageLoading(true);
         try {
             const imageUrl = await generateImageFromPrompt(selectedRecipe.imagePrompt);
-            onStateChange(prev => ({
+            onStateChange((prev: any) => ({
                 ...prev,
                 recipeImageCache: { ...prev.recipeImageCache, [selectedRecipe.id]: imageUrl }
             }));
@@ -221,7 +221,7 @@ const RecipesView: React.FC<RecipesViewProps> = ({ userData, favoriteRecipes, on
     
         currentY += 40; // 'Modo de Preparo' title
         const instructionLines: string[][] = [];
-        selectedRecipe.instructions.forEach((inst, i) => {
+        selectedRecipe.instructions.forEach((inst: any, i: any) => {
             const lines = measureAndWrapText(`${i + 1}. ${inst}`, `22px ${FONT_FAMILY}`, CANVAS_WIDTH - 2 * PADDING);
             instructionLines.push(lines);
             currentY += lines.length * 30;
@@ -377,8 +377,8 @@ const RecipesView: React.FC<RecipesViewProps> = ({ userData, favoriteRecipes, on
             </header>
             
             <div className="bg-brand-green-light p-1 rounded-xl flex max-w-sm mb-6 gap-1">
-                <button onClick={() => onStateChange(prev => ({...prev, activeTab: 'search'}))} className={tabButtonClasses('search')} aria-selected={activeTab === 'search'}>Buscar</button>
-                <button onClick={() => onStateChange(prev => ({...prev, activeTab: 'favorites'}))} className={tabButtonClasses('favorites')} aria-selected={activeTab === 'favorites'}>Favoritos</button>
+                <button onClick={() => onStateChange((prev: any) => ({...prev, activeTab: 'search'}))} className={tabButtonClasses('search')} aria-selected={activeTab === 'search'}>Buscar</button>
+                <button onClick={() => onStateChange((prev: any) => ({...prev, activeTab: 'favorites'}))} className={tabButtonClasses('favorites')} aria-selected={activeTab === 'favorites'}>Favoritos</button>
             </div>
 
             {activeTab === 'search' && (
@@ -389,7 +389,7 @@ const RecipesView: React.FC<RecipesViewProps> = ({ userData, favoriteRecipes, on
                             <input
                                 type="text"
                                 value={query}
-                                onChange={(e) => onStateChange(prev => ({...prev, query: e.target.value}))}
+                                onChange={(e) => onStateChange((prev: any) => ({...prev, query: e.target.value}))}
                                 placeholder="Buscar por ingrediente, prato ou objetivo..."
                                 className="flex-1 px-4 py-3 bg-slate-100 text-slate-800 border-2 border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
                                 disabled={isLoading}
@@ -420,7 +420,7 @@ const RecipesView: React.FC<RecipesViewProps> = ({ userData, favoriteRecipes, on
                             </div>
                             <div className={`flex flex-wrap gap-2 transition-opacity duration-300 ${isFading ? 'opacity-0' : 'opacity-100'}`}>
                                 {currentSuggestions.map((p, i) => (
-                                    <button key={i} onClick={() => { onStateChange(prev => ({...prev, query: p})); handleSearch(p); }} disabled={isLoading} className="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 font-semibold px-3 py-1.5 rounded-full transition-colors disabled:opacity-50">{p}</button>
+                                    <button key={i} onClick={() => { onStateChange((prev: any) => ({...prev, query: p})); handleSearch(p); }} disabled={isLoading} className="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 font-semibold px-3 py-1.5 rounded-full transition-colors disabled:opacity-50">{p}</button>
                                 ))}
                             </div>
                         </div>
@@ -454,7 +454,7 @@ const RecipesView: React.FC<RecipesViewProps> = ({ userData, favoriteRecipes, on
                     )}
                     {!isLoading && !error && recipes.length > 0 && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {recipes.map(recipe => <RecipeCard key={recipe.id} recipe={recipe} isFavorite={favoriteRecipes.some(r => r.id === recipe.id)} />)}
+                            {recipes.map((recipe: Recipe) => <RecipeCard key={recipe.id} recipe={recipe} isFavorite={favoriteRecipes.some(r => r.id === recipe.id)} />)}
                         </div>
                     )}
                     {!isLoading && !error && recipes.length === 0 && (
@@ -472,7 +472,7 @@ const RecipesView: React.FC<RecipesViewProps> = ({ userData, favoriteRecipes, on
                  <div className="min-h-[400px]">
                     {favoriteRecipes.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                             {favoriteRecipes.map(recipe => <RecipeCard key={recipe.id} recipe={recipe} isFavorite />)}
+                             {favoriteRecipes.map((recipe: Recipe) => <RecipeCard key={recipe.id} recipe={recipe} isFavorite />)}
                         </div>
                     ) : (
                         <div className="text-center text-slate-400 p-10 bg-white rounded-2xl border border-gray-100">
@@ -543,13 +543,13 @@ const RecipesView: React.FC<RecipesViewProps> = ({ userData, favoriteRecipes, on
                                 <div>
                                     <h3 className="font-bold text-slate-800 text-lg mb-3">Ingredientes</h3>
                                     <ul className="space-y-1.5 text-slate-600 list-disc list-inside">
-                                        {selectedRecipe.ingredients.map((ing, i) => <li key={i}>{ing}</li>)}
+                                        {selectedRecipe.ingredients.map((ing: string, i: number) => <li key={i}>{ing}</li>)}
                                     </ul>
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-slate-800 text-lg mb-3">Modo de Preparo</h3>
                                     <ol className="space-y-2 text-slate-600 list-decimal list-inside">
-                                        {selectedRecipe.instructions.map((inst, i) => <li key={i}>{inst}</li>)}
+                                        {selectedRecipe.instructions.map((inst: string, i: number) => <li key={i}>{inst}</li>)}
                                     </ol>
                                 </div>
                              </div>

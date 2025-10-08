@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { DailyPlan, View } from '../types';
-import { StarIcon, CalendarIcon, ChevronRightIcon, EditIcon } from './icons';
+import { StarIcon, CalendarIcon, EditIcon } from './icons';
 import Modal from './Modal';
 import MealCard from './MealCard';
 

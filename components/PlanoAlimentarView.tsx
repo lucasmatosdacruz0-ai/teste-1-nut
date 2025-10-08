@@ -1,27 +1,29 @@
 import React, { useState, useMemo, FC, useEffect } from 'react';
 import { UserData, DailyPlan, Meal, View, UserDataHandlers, MacroData, DietDifficulty, FoodItem, NotificationState } from '../types';
 import MealCard from './MealCard';
-import { SparklesIcon } from './icons/SparklesIcon';
-import { ChevronLeftIcon } from './icons/ChevronLeftIcon';
-import { ChevronRightIcon } from './icons/ChevronRightIcon';
-import { CalendarIcon } from './icons/CalendarIcon';
-import { TargetIcon } from './icons/TargetIcon';
-import { FireIcon } from './icons/FireIcon';
-import { BowlIcon } from './icons/BowlIcon';
-import { BellIcon } from './icons/BellIcon';
-import { ChatIcon } from './icons/ChatIcon';
-import { StarIcon } from './icons/StarIcon';
-import { CheckIcon } from './icons/CheckIcon';
-import { DumbbellIcon } from './icons/DumbbellIcon';
-import { ListIcon } from './icons/ListIcon';
+import { 
+    SparklesIcon, 
+    ChevronLeftIcon, 
+    ChevronRightIcon, 
+    CalendarIcon, 
+    TargetIcon, 
+    FireIcon, 
+    BowlIcon, 
+    BellIcon, 
+    ChatIcon, 
+    StarIcon, 
+    CheckIcon, 
+    DumbbellIcon, 
+    ListIcon,
+    ShareIcon,
+    ChevronUpIcon,
+    ChevronDownIcon
+} from './icons';
 import AdminAccessSection from './AdminAccessSection';
 import { PLANS } from '../constants/plans';
-import { ShareIcon } from './icons/ShareIcon';
 import html2canvas from 'html2canvas';
 import { DietImage } from './DietImage';
 import ShareDietModal from './ShareDietModal';
-import { ChevronUpIcon } from './icons/ChevronUpIcon';
-import { ChevronDownIcon } from './icons/ChevronDownIcon';
 
 interface PlanoAlimentarViewProps {
   userData: UserData;

@@ -2,15 +2,7 @@
 
 import React from 'react';
 import { NavItem } from './types';
-import { HomeIcon } from './components/icons/HomeIcon';
-import { ChatIcon } from './components/icons/ChatIcon';
-import { CalendarIcon } from './components/icons/CalendarIcon';
-import { ChartIcon } from './components/icons/ChartIcon';
-import { StarIcon } from './components/icons/StarIcon';
-import { GridIcon } from './components/icons/GridIcon';
-import { BookOpenIcon } from './components/icons/BookOpenIcon';
-import { TrophyIcon } from './components/icons/TrophyIcon';
-import { UserIcon } from './components/icons/UserIcon';
+import { HomeIcon, ChatIcon, CalendarIcon, ChartIcon, StarIcon, GridIcon, BookOpenIcon, TrophyIcon, UserIcon } from './components/icons';
 
 
 export const NAV_ITEMS: NavItem[] = [

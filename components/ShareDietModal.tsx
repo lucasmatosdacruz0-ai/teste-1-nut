@@ -1,7 +1,6 @@
 import React, { FC, useState, useEffect } from 'react';
 import Modal from './Modal';
-import { DownloadIcon } from './icons/DownloadIcon';
-import { ShareIcon } from './icons/ShareIcon';
+import { DownloadIcon, ShareIcon } from './icons';
 import { DailyPlan } from '../types';
 
 interface ShareDietModalProps {
@@ -30,7 +29,7 @@ const ShareDietModal: FC<ShareDietModalProps> = ({ isOpen, onClose, imageDataUrl
     }, []);
 
     const handleShare = async () => {
-        if (!plan || !imageDataUrl || !navigator.share) return;
+        if (!plan || !imageDataUrl || !('share' in navigator)) return;
         
         setIsSharing(true);
         try {
